@@ -1,0 +1,54 @@
+.logo-link {
+  text-decoration: none;
+  position: fixed;
+  top: 2rem;
+  left: 2rem;
+  z-index: 1000;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  transition: transform 0.3s ease;
+}
+
+.logo:hover {
+  transform: translateY(-2px);
+}
+
+.logo-image {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  transition: all 0.3s ease;
+  filter: grayscale(0%);
+}
+
+/* .logo:hover .logo-image {
+  filter: grayscale(0%) brightness(0.8);
+} */
+
+.logo-text {
+  font-family: 'Computer Modern Serif', 'Georgia', serif;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: #2c2c2c;
+  letter-spacing: 0.05rem;
+}
+
+@media (max-width: 768px) {
+  .logo-link {
+    top: 1rem;
+    left: 1rem;
+  }
+  
+  .logo-text {
+    display: none;
+  }
+  
+  .logo-image {
+    width: 40px;
+    height: 40px;
+  }
+}

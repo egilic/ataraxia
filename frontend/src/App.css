@@ -41,7 +41,7 @@
 }
 
 body {
-  font-family: 'Georgia', 'Garamond', serif;
+  font-family: 'Computer Modern Serif', 'Georgia', serif;
   background: #fafafa;
   color: #2c2c2c;
   line-height: 1.6;
@@ -183,7 +183,7 @@ body {
   left: 1rem;
   font-size: 4rem;
   color: rgba(44, 44, 44, 0.15);
-  font-family: Georgia, serif;
+  font-family: 'Computer Modern Serif', 'Georgia', serif;
   line-height: 1;
 }
 
@@ -193,7 +193,7 @@ body {
   color: #2c2c2c;
   padding: 1.5rem 4rem;
   font-size: 1.3rem;
-  font-family: 'Georgia', serif;
+  font-family: 'Computer Modern Serif', 'Georgia', serif;
   letter-spacing: 0.15rem;
   text-transform: uppercase;
   cursor: pointer;
@@ -224,7 +224,7 @@ body {
 }
 
 .footer-quote {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-style: italic;
   color: #666;
   text-align: center;
@@ -234,7 +234,7 @@ body {
 
 .footer-author {
   display: block;
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: #888;
   margin-top: 0.5rem;
   font-style: normal;
