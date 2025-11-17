@@ -1,4 +1,2 @@
 fastapi==0.121.2
-fastapi-cli==0.0.16
-fastapi-cloud-cli==0.3.1
-SQLAlchemy==2.0.44
+uvicorn==0.38.0

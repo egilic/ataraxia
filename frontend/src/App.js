@@ -1,37 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { getUsers } from './services/api';
 import './App.css';
 
 function App() {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    getUsers()
-      .then(data => {
-        setUsers(data.users);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-
   return (
     <div className="App">
-      <h1>Users</h1>
-      <ul>
-        {users.map(user => (
-          <li key={user.id}>
-            {user.name} - {user.email}
-          </li>
-        ))}
-      </ul>
+      <div className="container">
+        <header className="header">
+          <h1 className="title">Ataraxia</h1>
+          <div className="definition">
+            <p>calmness untroubled by mental or emotional disquiet</p>
+          </div>
+        </header>
+
+        <main className="main">
+          <div className="app-description">
+            <p>
+              Take back what 21st century innovation took from us—attention, 
+              self-control, and connection. Ataraxia is designed to help you reach your goals, be 
+              more fulfilled, and understand yourself better. The timeless wisdom the Stoics preached
+              has become even more applicable to us.
+            </p>
+          </div>
+
+          <button className="cta-button">Reclaim Your Inner Citadel</button>
+        </main>
+
+        <footer className="footer">
+          <div className="stoic-border"></div>
+          <blockquote className="footer-quote">
+            "If you want to improve, be content to be thought foolish and stupid."
+            <cite className="footer-author">- Epictetus</cite>
+          </blockquote>
+        </footer>
+      </div>
     </div>
   );
 }

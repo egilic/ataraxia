@@ -1,0 +1,273 @@
+
+/* .App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+} */
+
+/* .App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+} */
+
+/* .App-link {
+  color: #61dafb;
+} */
+
+/* @keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+} */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Georgia', 'Garamond', serif;
+  background: #fafafa;
+  color: #2c2c2c;
+  line-height: 1.6;
+}
+
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+}
+
+.container {
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  margin-bottom: 5rem;
+  margin-top: 3rem;
+  animation: fadeIn 1s ease-in;
+  position: relative;
+}
+
+.title {
+  font-size: 6rem;
+  font-weight: 300;
+  letter-spacing: 0.3rem;
+  color: #2c2c2c;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.title::after {
+  content: '◆';
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1rem;
+  color: #2c2c2c;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.2);
+  }
+}
+
+.definition {
+  margin-top: 2rem;
+  font-size: 1.3rem;
+  color: #666;
+  font-style: italic;
+  letter-spacing: 0.05rem;
+  position: relative;
+  padding: 0 3rem;
+}
+
+.definition::before,
+.definition::after {
+  content: '—';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  font-style: normal;
+}
+
+.definition::before {
+  left: 0;
+  animation: slideInLeft 1.5s ease-out;
+}
+
+.definition::after {
+  right: 0;
+  animation: slideInRight 1.5s ease-out;
+}
+
+@keyframes slideInLeft {
+  from {
+    left: 50%;
+    opacity: 0;
+  }
+  to {
+    left: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    right: 50%;
+    opacity: 0;
+  }
+  to {
+    right: 0;
+    opacity: 1;
+  }
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  animation: fadeIn 1.8s ease-in;
+}
+
+.app-description {
+  margin: 0 auto 4rem;
+  font-size: 1.6rem;
+  color: #2c2c2c;
+  line-height: 2;
+  max-width: 800px;
+  font-weight: 400;
+  padding: 3rem;
+  border-left: 4px solid #2c2c2c;
+  background: linear-gradient(to right, rgba(44, 44, 44, 0.03), transparent);
+  text-align: left;
+  position: relative;
+}
+
+.app-description::before {
+  content: '"';
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  font-size: 4rem;
+  color: rgba(44, 44, 44, 0.15);
+  font-family: Georgia, serif;
+  line-height: 1;
+}
+
+.cta-button {
+  background: transparent;
+  border: 3px solid #2c2c2c;
+  color: #2c2c2c;
+  padding: 1.5rem 4rem;
+  font-size: 1.3rem;
+  font-family: 'Georgia', serif;
+  letter-spacing: 0.15rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 2rem auto 0;
+  font-weight: 500;
+  position: relative;
+}
+
+.cta-button:hover {
+  background: #2c2c2c;
+  color: #fafafa;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(44, 44, 44, 0.25);
+}
+
+.footer {
+  margin-top: auto;
+  padding: 3rem 0 2rem;
+  animation: fadeIn 2.2s ease-in;
+}
+
+.stoic-border {
+  width: 100%;
+  height: 1px;
+  background: #ddd;
+  margin-bottom: 2rem;
+}
+
+.footer-quote {
+  font-size: 1rem;
+  font-style: italic;
+  color: #666;
+  text-align: center;
+  border: none;
+  padding: 0;
+}
+
+.footer-author {
+  display: block;
+  font-size: 0.9rem;
+  color: #888;
+  margin-top: 0.5rem;
+  font-style: normal;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 3.5rem;
+  }
+  
+  .definition {
+    font-size: 1.1rem;
+    padding: 0 2rem;
+  }
+  
+  .app-description {
+    font-size: 1.3rem;
+    padding: 2rem;
+  }
+  
+  .cta-button {
+    padding: 1.2rem 3rem;
+    font-size: 1.1rem;
+  }
+}
