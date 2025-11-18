@@ -1,0 +1,81 @@
+.materials-page {
+  min-height: 100vh;
+  background: #fafafa;
+  padding: 2rem;
+  padding-top: 8rem;
+}
+
+.materials-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.materials-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.materials-header h1 {
+  font-size: 3rem;
+  font-weight: 300;
+  color: #2c2c2c;
+  margin-bottom: 0.5rem;
+  font-family: 'Computer Modern Serif', 'Georgia', serif;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: #666;
+  font-style: italic;
+  margin-bottom: 2rem;
+}
+
+.logout-button {
+  background: transparent;
+  border: 2px solid #2c2c2c;
+  color: #2c2c2c;
+  padding: 0.8rem 2rem;
+  font-size: 0.9rem;
+  font-family: 'Computer Modern Serif', 'Georgia', serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.1rem;
+  text-transform: uppercase;
+}
+
+.logout-button:hover {
+  background: #2c2c2c;
+  color: #fafafa;
+}
+
+.materials-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.materials-section {
+  background: white;
+  padding: 2rem;
+  border: 2px solid #eee;
+  transition: all 0.3s ease;
+}
+
+.materials-section:hover {
+  border-color: #2c2c2c;
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.materials-section h2 {
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: #2c2c2c;
+  margin-bottom: 1rem;
+  font-family: 'Computer Modern Serif', 'Georgia', serif;
+}
+
+.materials-section p {
+  color: #666;
+  line-height: 1.6;
+}

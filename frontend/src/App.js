@@ -1,6 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Logo from './components/Logo';
+import Signup from './pages/Signup';
+import Login from './pages/Login';
+import Materials from './pages/Materials';
 import './App.css';
 
 function LandingPage() {
@@ -49,7 +52,9 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        {/* <Route path="/login" element={<Login />} /> */}
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/materials" element={<Materials />} />
       </Routes>
     </Router>
   );

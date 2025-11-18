@@ -1,0 +1,117 @@
+.signup-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  padding: 2rem;
+}
+
+.signup-container {
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+}
+
+.signup-title {
+  font-size: 3rem;
+  font-weight: 300;
+  letter-spacing: 0.2rem;
+  color: #2c2c2c;
+  margin-bottom: 0.5rem;
+  font-family: 'Computer Modern Serif', 'Georgia', serif;
+}
+
+.signup-subtitle {
+  font-size: 1.3rem;
+  color: #666;
+  font-style: italic;
+  margin-bottom: 3rem;
+}
+
+.error-message {
+  background: #ffebee;
+  color: #c62828;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #c62828;
+  font-size: 1rem;
+  text-align: left;
+}
+
+.signup-form {
+  text-align: left;
+}
+
+.form-group {
+  margin-bottom: 1.9rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.6rem;
+  color: #2c2c2c;
+  font-size: 1rem;
+  letter-spacing: 0.05rem;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 1.1rem;
+  border: 2px solid #ddd;
+  background: #fff;
+  font-size: 1.1rem;
+  font-family: 'Computer Modern Serif', 'Georgia', serif;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #2c2c2c;
+}
+
+.signup-button {
+  width: 100%;
+  background: #2c2c2c;
+  color: #fafafa;
+  border: none;
+  padding: 1.2rem;
+  font-size: 1.1rem;
+  font-family: 'Computer Modern Serif', 'Georgia', serif;
+  letter-spacing: 0.15rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.signup-button:hover:not(:disabled) {
+  background: #1a1a1a;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(44, 44, 44, 0.3);
+}
+
+.signup-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-link {
+  margin-top: 2rem;
+  color: #666;
+  font-size: 1.05rem;
+}
+
+.login-link a {
+  color: #2c2c2c;
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 1px solid #2c2c2c;
+  transition: opacity 0.3s ease;
+}
+
+.login-link a:hover {
+  opacity: 0.7;
+}
