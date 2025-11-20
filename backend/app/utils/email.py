@@ -11,7 +11,7 @@ resend.api_key = RESEND_API_KEY
 
 def send_password_reset_notification(user_email: str, user_name: str):
     """
-    Send an email to YOU when someone requests a password reset
+    Send an email when someone requests a password reset
     """
     try:
         resend.Emails.send({
@@ -31,4 +31,24 @@ def send_password_reset_notification(user_email: str, user_name: str):
         return True
     except Exception as e:
         print(f"Error sending email: {e}")
+        return False
+    
+def send_feedback_email(user_name: str, user_email: str, feedback_message: str):
+    """Send feedback to support email"""
+    try:
+        resend.Emails.send({
+            "from": "onboarding@resend.dev",
+            "to": SUPPORT_EMAIL,
+            "subject": f"Ataraxia Feedback from {user_name}",
+            "html": f"""
+                <h2>New Feedback Received</h2>
+                <p><strong>From:</strong> {user_name} ({user_email})</p>
+                <hr>
+                <p><strong>Message:</strong></p>
+                <p>{feedback_message}</p>
+            """
+        })
+        return True
+    except Exception as e:
+        print(f"Error sending feedback email: {e}")
         return False

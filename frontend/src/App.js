@@ -5,6 +5,7 @@ import Signup from './pages/Signup';
 import Login from './pages/Login';
 import Materials from './pages/Materials';
 import ForgotPassword from './pages/ForgotPassword';
+import HabitTracker from './pages/HabitTracker';
 import './App.css';
 
 function LandingPage() {
@@ -57,6 +58,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/materials" element={<Materials />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/habit-tracker" element={<HabitTracker />} />
       </Routes>
     </Router>
   );

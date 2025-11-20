@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel, EmailStr, Field
 from app.database import get_db_connection, init_db
 from app.auth import hash_password, verify_password, create_access_token, verify_token
-from app.utils.email import send_password_reset_notification
+from app.utils.email import send_password_reset_notification, send_feedback_email
 from collections import defaultdict
 
 
@@ -12,9 +12,42 @@ app = FastAPI()
 
 init_db()
 
+# Rate limiting data structures
 password_reset_attempts = defaultdict(list)
+feedback_attempts = defaultdict(list)
+
+# Constants
 MAX_RESET_ATTEMPTS = 3
 RESET_WINDOW_MINUTES = 8 * 60
+MAX_FEEDBACK_ATTEMPTS = 2
+FEEDBACK_WINDOW_MINUTES = 60 * 24 # Two attempts per day
+
+# Allow React to make requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+class SignupRequest(BaseModel):
+    name: str
+    email: EmailStr
+    password: str = Field(min_length=10)
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=10)
+
+class ForgotPasswordRequest(BaseModel):
+    email : EmailStr
+
+class FeedbackRequest(BaseModel):
+    message: str = Field(max_length=3000)
+
+
 
 def check_rate_limit(email: str) -> bool:
     now = datetime.now(timezone.utc)
@@ -35,26 +68,6 @@ def check_rate_limit(email: str) -> bool:
     password_reset_attempts[email].append(now)
     return True
 
-# Allow React to make requests
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-class SignupRequest(BaseModel):
-    name: str
-    email: EmailStr
-    password: str = Field(min_length=10)
-
-class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str = Field(min_length=10)
-
-class ForgotPasswordRequest(BaseModel):
-    email : EmailStr
 
 def get_current_user(authorization: str = Header(None)):
     if not authorization:
@@ -69,9 +82,11 @@ def get_current_user(authorization: str = Header(None)):
     except:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+
 @app.get("/")
 def root():
     return {"message": "API is running"}
+
 
 @app.post("/api/signup")
 def signup(signup_data: SignupRequest):
@@ -110,6 +125,7 @@ def signup(signup_data: SignupRequest):
         }
     }
 
+
 @app.post("/api/login")
 def login(login_data: LoginRequest):
     conn = get_db_connection()
@@ -138,6 +154,7 @@ def login(login_data: LoginRequest):
             "email": user['email']
         }
     }
+
 
 @app.post("/api/forgot-password")
 def forgot_password(request: ForgotPasswordRequest):
@@ -169,6 +186,52 @@ def forgot_password(request: ForgotPasswordRequest):
     else:
         return {"message": "There was an issue. Please try again later."}
 
+
+@app.post("/api/feedback")
+def submit_feedback(request: FeedbackRequest, authorization: str = Header(None)):
+    """Submit user feedback"""
+    
+    # Manually check authentication
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    try:
+        token = authorization.replace("Bearer ", "")
+        payload = verify_token(token)
+        if not payload:
+            raise HTTPException(status_code=401, detail="Invalid token")
+    except:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user_email = payload['email']
+    
+    # Check rate limit
+    if not check_rate_limit(user_email, feedback_attempts, MAX_FEEDBACK_ATTEMPTS, FEEDBACK_WINDOW_MINUTES):
+        raise HTTPException(
+            status_code=429,
+            detail="Too many feedback submissions. Please try again tomorrow."
+        )
+    
+    # Get user details
+    conn = get_db_connection()
+    user = conn.execute(
+        'SELECT name, email FROM users WHERE id = ?',
+        (payload['user_id'],)
+    ).fetchone()
+    conn.close()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Send feedback email
+    email_sent = send_feedback_email(user['name'], user['email'], request.message)
+    
+    if email_sent:
+        return {"message": "Thank you so much for your feedback!"}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to send feedback. Please try again.")
+
+
 @app.get("/api/users")
 def get_users():
     """Get all users (for testing)"""
@@ -177,6 +240,7 @@ def get_users():
     users = cursor.fetchall()
     conn.close()
     return {"users": [dict(user) for user in users]}
+
 
 @app.get("/api/users/{user_id}")
 def get_user(user_id: int):
@@ -193,6 +257,7 @@ def get_user(user_id: int):
     
     return dict(user)
 
+
 @app.post("/api/users")
 def create_user(name: str, email: str):
     conn = get_db_connection()
@@ -208,6 +273,7 @@ def create_user(name: str, email: str):
     conn.close()
     
     return {"id": user_id, "name": name, "email": email}
+
 
 @app.delete("/api/users/{user_id}")
 def delete_user(user_id: int):

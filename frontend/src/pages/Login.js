@@ -87,6 +87,23 @@ function Login() {
               />
             </div>
 
+            <div style={{ textAlign: 'right', marginTop: '0.5rem' }}>
+                <Link 
+                  to="/forgot-password" 
+                  style={{ 
+                    fontSize: '1.2rem', 
+                    color: '#666',
+                    textDecoration: 'none',
+                    borderBottom: '1px solid transparent',
+                    transition: 'border-color 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.borderBottomColor = '#2c2c2c'}
+                  onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
+                >
+                  Forgot password?
+                </Link>
+            </div>
+
             <button type="submit" className="signup-button" disabled={loading}>
               {loading ? 'Signing In...' : 'Sign In'}
             </button>

@@ -26,6 +26,10 @@ function ForgotPassword() {
       });
       
       const data = await response.json();
+
+      if (response.status === 429) {
+        throw new Error('Too many attempts. Please try again in eight hours.');
+      }
       
       if (!response.ok) {
         throw new Error(data.detail || 'Request failed');
