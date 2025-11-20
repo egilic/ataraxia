@@ -1,8 +1,9 @@
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, EmailStr, Field
 from app.database import get_db_connection, init_db
 from app.auth import hash_password, verify_password, create_access_token, verify_token
-from pydantic import BaseModel, EmailStr, Field
+from app.utils.email import send_password_reset_notification
 
 app = FastAPI()
 
@@ -25,6 +26,9 @@ class SignupRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=10)
+
+class ForgotPasswordRequest(BaseModel):
+    email : EmailStr
 
 def get_current_user(authorization: str = Header(None)):
     if not authorization:
@@ -108,6 +112,30 @@ def login(login_data: LoginRequest):
             "email": user['email']
         }
     }
+
+@app.post("/api/forgot-password")
+def forgot_password(request: ForgotPasswordRequest):
+    conn = get_db_connection()
+    
+    # Find user
+    user = conn.execute(
+        'SELECT * FROM users WHERE email = ?',
+        (request.email,)
+    ).fetchone()
+    
+    conn.close()
+    
+    # Still return success to not reveal which emails exist
+    if not user:
+        return {"message": "If that email exists, we've been notified"}
+    
+    # Send notification email to support
+    email_sent = send_password_reset_notification(user['email'], user['name'])
+    
+    if email_sent:
+        return {"message": "Password reset request received. We'll contact you shortly."}
+    else:
+        return {"message": "There was an issue. Please try again later."}
 
 @app.get("/api/users")
 def get_users():

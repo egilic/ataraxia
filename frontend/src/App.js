@@ -4,6 +4,7 @@ import Logo from './components/Logo';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
 import Materials from './pages/Materials';
+import ForgotPassword from './pages/ForgotPassword';
 import './App.css';
 
 function LandingPage() {
@@ -55,6 +56,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/materials" element={<Materials />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
     </Router>
   );
