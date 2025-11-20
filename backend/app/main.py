@@ -1,13 +1,39 @@
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
+from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel, EmailStr, Field
 from app.database import get_db_connection, init_db
 from app.auth import hash_password, verify_password, create_access_token, verify_token
 from app.utils.email import send_password_reset_notification
+from collections import defaultdict
+
 
 app = FastAPI()
 
 init_db()
+
+password_reset_attempts = defaultdict(list)
+MAX_RESET_ATTEMPTS = 3
+RESET_WINDOW_MINUTES = 8 * 60
+
+def check_rate_limit(email: str) -> bool:
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(minutes=RESET_WINDOW_MINUTES)
+
+     # Remove old attempts
+    new_list = []
+    for attempt in password_reset_attempts[email]:
+        if attempt > cutoff:
+            new_list.append(attempt)
+    password_reset_attempts[email] = new_list
+
+    # Check if under limit
+    if len(password_reset_attempts[email]) >= MAX_RESET_ATTEMPTS:
+        return False
+    
+    # Bookkeeping
+    password_reset_attempts[email].append(now)
+    return True
 
 # Allow React to make requests
 app.add_middleware(
@@ -115,6 +141,12 @@ def login(login_data: LoginRequest):
 
 @app.post("/api/forgot-password")
 def forgot_password(request: ForgotPasswordRequest):
+    # Rate limit
+    if not check_rate_limit(request.email):
+        raise HTTPException(
+            status_code=429,
+            detail="Too many password reset attempts. Please try again later. After 3 attempts you will be locked out."
+        )
     conn = get_db_connection()
     
     # Find user
