@@ -2,15 +2,17 @@ from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel, EmailStr, Field
-from app.database import get_db_connection, init_db
+from app.database import get_supabase_client
 from app.auth import hash_password, verify_password, create_access_token, verify_token
 from app.utils.email import send_password_reset_notification, send_feedback_email
 from collections import defaultdict
+from os import load_dotenv
 
+load_dotenv()
 
 app = FastAPI()
 
-init_db()
+supabase = get_supabase_client()
 
 # Rate limiting data structures
 password_reset_attempts = defaultdict(list)
@@ -47,6 +49,34 @@ class ForgotPasswordRequest(BaseModel):
 class FeedbackRequest(BaseModel):
     message: str = Field(max_length=3000)
 
+class SaveHabitsRequest(BaseModel):
+    habits: list
+
+class SaveCompletedRequest(BaseModel):
+    completed_data: dict
+    month: str
+
+class SaveSleepRequest(BaseModel):
+    sleep_data: dict
+    month: str
+
+class SaveMomentsRequest(BaseModel):
+    moments: dict
+    month: str
+
+def get_current_user_from_token(authorization: str = Header(None)):
+    """Extract user from JWT token"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    try:
+        token = authorization.replace("Bearer ", "")
+        payload = verify_token(token)
+        if not payload:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return payload
+    except:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
 
 def check_rate_limit(email: str) -> bool:
@@ -90,56 +120,51 @@ def root():
 
 @app.post("/api/signup")
 def signup(signup_data: SignupRequest):
-    conn = get_db_connection()
-
     # Check if user already exists
-    existing_user = conn.execute(
-        'SELECT * FROM users WHERE email = ?',
-        (signup_data.email,)
-    ).fetchone()
+    existing_user = supabase.table('users').select('*').eq('email', signup_data.email).execute()
 
-    if (existing_user):
-        conn.close()
+    if existing_user.data:
         raise HTTPException(status_code=400, detail="This email is already registered")
     
     # Hash password then create new user
     hashed_pw = hash_password(signup_data.password)
-    cursor = conn.execute(
-        'INSERT INTO users (name, email, hashed_password) VALUES (?, ?, ?)',
-        (signup_data.name, signup_data.email, hashed_pw)
-    )
-    conn.commit()
-    user_id = cursor.lastrowid # Fetch linked iD
-    conn.close()
+    
+    result = supabase.table('users').insert({
+        'name': signup_data.name,
+        'email': signup_data.email,
+        'hashed_password': hashed_pw
+    }).execute()
+
+    if not result.data:
+        raise HTTPException(status_code=500, detail="Failed to create user")
+    
+    user = result.data[0]
 
     # Create token
-    token = create_access_token({"user_id": user_id, "email": signup_data.email})
+    token = create_access_token({"user_id": user['id'], "email": user['email']})
 
     return {
         "message": "User created successfully",
         "token": token,
         "user": {
-            "id": user_id,
-            "name": signup_data.name,
-            "email": signup_data.email
+            "id": user['id'],
+            "name": user['name'],
+            "email": user['email']
         }
     }
 
 
+
 @app.post("/api/login")
 def login(login_data: LoginRequest):
-    conn = get_db_connection()
+    result = supabase.table('users').select('*').eq('email', login_data.email).execute()
 
-    # Fetch user
-    user = conn.execute(
-        'SELECT * FROM users WHERE email = ?',
-        (login_data.email,)
-    ).fetchone()
-    conn.close()
-
-    if not user:
+    if not result.data:
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
+    # Fetch user
+    user = result.data[0]
+
     if not verify_password(login_data.password, user['hashed_password']):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
@@ -162,23 +187,16 @@ def forgot_password(request: ForgotPasswordRequest):
     if not check_rate_limit(request.email):
         raise HTTPException(
             status_code=429,
-            detail="Too many password reset attempts. Please try again later. After 3 attempts you will be locked out."
-        )
-    conn = get_db_connection()
-    
+            detail="Too many password reset attempts. Please try again later. After 3 attempts you will be locked out.")
+   
     # Find user
-    user = conn.execute(
-        'SELECT * FROM users WHERE email = ?',
-        (request.email,)
-    ).fetchone()
-    
-    conn.close()
+    result = supabase.table('users').select('*').eq('email', request.email).execute()
     
     # Still return success to not reveal which emails exist
-    if not user:
+    if not result.data:
         return {"message": "If that email exists, we've been notified"}
     
-    # Send notification email to support
+    user = result.data[0]
     email_sent = send_password_reset_notification(user['email'], user['name'])
     
     if email_sent:
@@ -187,49 +205,80 @@ def forgot_password(request: ForgotPasswordRequest):
         return {"message": "There was an issue. Please try again later."}
 
 
+@app.get("/api/habits")
+def get_habits(authorization: str = Header(None)):
+    """Get user's habits"""
+    current_user = get_current_user_from_token(authorization)
+    
+    result = supabase.table('habits').select('*').eq('user_id', current_user['user_id']).execute()
+    
+    if result.data:
+        return {"habits": result.data[0]['habits']}
+    else:
+        return {"habits": []}
+
+
 @app.post("/api/feedback")
 def submit_feedback(request: FeedbackRequest, authorization: str = Header(None)):
     """Submit user feedback"""
-    
-    # Manually check authentication
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    
-    try:
-        token = authorization.replace("Bearer ", "")
-        payload = verify_token(token)
-        if not payload:
-            raise HTTPException(status_code=401, detail="Invalid token")
-    except:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    user_email = payload['email']
-    
-    # Check rate limit
-    if not check_rate_limit(user_email, feedback_attempts, MAX_FEEDBACK_ATTEMPTS, FEEDBACK_WINDOW_MINUTES):
+    curr_user = get_current_user_from_token(authorization)
+    email = curr_user['email']
+
+    if not check_rate_limit(email):
         raise HTTPException(
             status_code=429,
-            detail="Too many feedback submissions. Please try again tomorrow."
+            detail="Too many feedback submissions. Please try again in an hour."
         )
     
-    # Get user details
-    conn = get_db_connection()
-    user = conn.execute(
-        'SELECT name, email FROM users WHERE id = ?',
-        (payload['user_id'],)
-    ).fetchone()
-    conn.close()
-    
-    if not user:
+    result = supabase.table('users').select('name, email').eq('id', curr_user['user_id']).execute()
+    if not result.data:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Send feedback email
+    user = result.data[0]
     email_sent = send_feedback_email(user['name'], user['email'], request.message)
     
     if email_sent:
-        return {"message": "Thank you so much for your feedback!"}
+        return {"message": "Thank you for your feedback!"}
     else:
         raise HTTPException(status_code=500, detail="Failed to send feedback. Please try again.")
+
+
+@app.get("/api/habits")
+def get_habits(authorization: str = Header(None)):
+    """Get user's habits"""
+    current_user = get_current_user_from_token(authorization)
+    
+    result = supabase.table('habits').select('*').eq('user_id', current_user['user_id']).execute()
+    
+    if result.data:
+        return {"habits": result.data[0]['habits']}
+    else:
+        return {"habits": []}
+    
+
+@app.post("/api/habits")
+def save_habits(request: SaveHabitsRequest, authorization: str = Header(None)):
+    """Save user's habits"""
+    current_user = get_current_user_from_token(authorization)
+    
+    # Check if habits exist for this user
+    existing = supabase.table('habits').select('*').eq('user_id', current_user['user_id']).execute()
+    
+    if existing.data:
+        # Update
+        result = supabase.table('habits').update({
+            'habits': request.habits,
+            'updated_at': datetime.now(timezone.utc).isoformat()
+        }).eq('user_id', current_user['user_id']).execute()
+    else:
+        # Insert
+        result = supabase.table('habits').insert({
+            'user_id': current_user['user_id'],
+            'habits': request.habits
+        }).execute()
+    
+    return {"message": "Habits saved successfully"}
+
 
 
 @app.get("/api/users")
